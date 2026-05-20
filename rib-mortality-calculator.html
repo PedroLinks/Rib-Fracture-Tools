@@ -47,6 +47,64 @@ body{
 }
 .home-btn:hover { border-color: var(--acc); color: var(--acc); }
 
+/* ── AIS CALCULATOR ── */
+.ais-region{
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:9px;margin-bottom:8px;overflow:hidden;
+}
+.ais-region:last-child{margin-bottom:0;}
+.ais-region-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 13px;cursor:pointer;user-select:none;
+  transition:background 0.15s;
+}
+.ais-region-head:hover{background:var(--s3);}
+.ais-region-left{display:flex;align-items:center;gap:9px;}
+.ais-region-name{font-size:12.5px;font-weight:700;}
+.ais-score-badge{
+  font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;
+  padding:2px 8px;border-radius:4px;min-width:28px;text-align:center;
+  transition:all 0.2s;
+}
+.ais-region-body{display:none;padding:0 13px 10px;}
+.ais-region-body.open{display:block;}
+.ais-injury-btn{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:7px 10px;margin-bottom:5px;border-radius:7px;
+  border:1px solid var(--border);background:transparent;
+  cursor:pointer;transition:all 0.15s;width:100%;text-align:left;
+  font-family:'Outfit',sans-serif;
+}
+.ais-injury-btn:last-child{margin-bottom:0;}
+.ais-injury-btn:hover{background:var(--s3);border-color:var(--border2);}
+.ais-injury-btn.selected{border-color:#a78bfa;background:#a78bfa12;}
+.ais-injury-name{font-size:12px;color:var(--text);}
+.ais-injury-btn.selected .ais-injury-name{color:#c4b5fd;font-weight:600;}
+.ais-injury-score{
+  font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;
+  padding:2px 7px;border-radius:4px;flex-shrink:0;margin-left:8px;
+}
+.ais-none-btn{
+  display:block;width:100%;padding:6px 10px;margin-bottom:8px;
+  border:1px dashed var(--border);border-radius:7px;background:transparent;
+  color:var(--muted);font-size:11px;font-family:'Outfit',sans-serif;
+  cursor:pointer;text-align:center;transition:all 0.15s;
+}
+.ais-none-btn:hover{border-color:var(--border2);color:var(--subtle);}
+.iss-computed{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 14px;background:var(--s2);border:1px solid var(--border);
+  border-radius:9px;margin-top:10px;flex-wrap:wrap;
+}
+.iss-computed-main{display:flex;align-items:baseline;gap:6px;}
+.iss-computed-num{font-size:36px;font-weight:900;letter-spacing:-0.03em;}
+.iss-computed-label{font-size:12px;color:var(--muted);}
+.iss-formula{
+  font-family:'IBM Plex Mono',monospace;font-size:11px;
+  color:var(--muted);flex:1;line-height:1.6;
+}
+.iss-formula span{color:#a78bfa;font-weight:700;}
+
 /* animated background */
 body::before{
   content:'';position:fixed;inset:0;
@@ -325,17 +383,152 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2);}
       <div class="card-accent" style="background:#a78bfa;"></div>
       <span class="card-title" style="color:#a78bfa;">Injury Severity Score</span>
     </div>
-    <span class="card-tag" style="background:#a78bfa15;color:#a78bfa;border:1px solid #a78bfa30;">ISS</span>
+    <span class="card-tag" style="background:#a78bfa15;color:#a78bfa;border:1px solid #a78bfa30;">AIS → ISS AUTO-CALC</span>
   </div>
   <div class="card-body">
-    <div class="iss-value-display">
-      <span class="iss-number" id="iss-display">1</span>
-      <span class="iss-band" id="iss-band" style="background:#22c55e20;color:#22c55e;">Minor</span>
+    <div style="font-size:11.5px;color:var(--muted);margin-bottom:12px;line-height:1.6;">
+      Select the <strong style="color:var(--subtle);">worst injury</strong> in each body region. ISS = sum of top 3 squared AIS scores. Leave regions at "None" if uninjured.
     </div>
-    <div class="iss-wrap">
-      <input type="range" id="iss" min="1" max="75" value="1" oninput="updateISS()">
-      <div class="iss-labels">
-        <span>1</span><span>15</span><span>25</span><span>40</span><span>75</span>
+
+    <!-- HEAD/NECK -->
+    <div class="ais-region">
+      <div class="ais-region-head" onclick="toggleRegion('head')">
+        <div class="ais-region-left">
+          <span style="font-size:16px;">🧠</span>
+          <span class="ais-region-name">Head &amp; Neck</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="ais-score-badge" id="badge-head" style="background:#64748b20;color:#64748b;">AIS 0</span>
+          <span style="color:var(--muted);font-size:12px;" id="arrow-head">▼</span>
+        </div>
+      </div>
+      <div class="ais-region-body" id="body-head">
+        <button class="ais-none-btn" onclick="selectAIS('head',0,'None / No injury')">✕ None / No significant injury</button>
+        <button class="ais-injury-btn" id="head-1" onclick="selectAIS('head',1,'Headache / dizziness')"><span class="ais-injury-name">Headache, dizziness, no LOC</span><span class="ais-injury-score" style="background:#22c55e20;color:#22c55e;">AIS 1</span></button>
+        <button class="ais-injury-btn" id="head-2" onclick="selectAIS('head',2,'Concussion / LOC <1h')"><span class="ais-injury-name">Concussion / LOC &lt;1h / cervical sprain</span><span class="ais-injury-score" style="background:#84cc1620;color:#84cc16;">AIS 2</span></button>
+        <button class="ais-injury-btn" id="head-3" onclick="selectAIS('head',3,'LOC 1-6h / basilar skull fx')"><span class="ais-injury-name">LOC 1–6h / basilar skull fracture / GCS 9–14</span><span class="ais-injury-score" style="background:#eab30820;color:#eab308;">AIS 3</span></button>
+        <button class="ais-injury-btn" id="head-4" onclick="selectAIS('head',4,'LOC >6h / epidural hematoma')"><span class="ais-injury-name">LOC &gt;6h / epidural or subdural hematoma / GCS 6–8</span><span class="ais-injury-score" style="background:#f9731620;color:#f97316;">AIS 4</span></button>
+        <button class="ais-injury-btn" id="head-5" onclick="selectAIS('head',5,'LOC >24h / large ICH / GCS 3-5')"><span class="ais-injury-name">LOC &gt;24h / large ICH / herniation / GCS 3–5</span><span class="ais-injury-score" style="background:#ef444420;color:#ef4444;">AIS 5</span></button>
+      </div>
+    </div>
+
+    <!-- FACE -->
+    <div class="ais-region">
+      <div class="ais-region-head" onclick="toggleRegion('face')">
+        <div class="ais-region-left">
+          <span style="font-size:16px;">😮</span>
+          <span class="ais-region-name">Face</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="ais-score-badge" id="badge-face" style="background:#64748b20;color:#64748b;">AIS 0</span>
+          <span style="color:var(--muted);font-size:12px;" id="arrow-face">▼</span>
+        </div>
+      </div>
+      <div class="ais-region-body" id="body-face">
+        <button class="ais-none-btn" onclick="selectAIS('face',0,'None')">✕ None / No significant injury</button>
+        <button class="ais-injury-btn" id="face-1" onclick="selectAIS('face',1,'Abrasion / contusion')"><span class="ais-injury-name">Abrasion, contusion, laceration</span><span class="ais-injury-score" style="background:#22c55e20;color:#22c55e;">AIS 1</span></button>
+        <button class="ais-injury-btn" id="face-2" onclick="selectAIS('face',2,'Undisplaced facial fx')"><span class="ais-injury-name">Undisplaced facial fracture / dental injury</span><span class="ais-injury-score" style="background:#84cc1620;color:#84cc16;">AIS 2</span></button>
+        <button class="ais-injury-btn" id="face-3" onclick="selectAIS('face',3,'Displaced facial fx / orbit')"><span class="ais-injury-name">Displaced facial fracture / orbital fracture / corneal laceration</span><span class="ais-injury-score" style="background:#eab30820;color:#eab308;">AIS 3</span></button>
+      </div>
+    </div>
+
+    <!-- CHEST -->
+    <div class="ais-region">
+      <div class="ais-region-head" onclick="toggleRegion('chest')">
+        <div class="ais-region-left">
+          <span style="font-size:16px;">🫁</span>
+          <span class="ais-region-name">Chest</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="ais-score-badge" id="badge-chest" style="background:#64748b20;color:#64748b;">AIS 0</span>
+          <span style="color:var(--muted);font-size:12px;" id="arrow-chest">▼</span>
+        </div>
+      </div>
+      <div class="ais-region-body" id="body-chest">
+        <button class="ais-none-btn" onclick="selectAIS('chest',0,'None')">✕ None / No significant injury</button>
+        <button class="ais-injury-btn" id="chest-1" onclick="selectAIS('chest',1,'1-2 rib fx / minor contusion')"><span class="ais-injury-name">1–2 rib fractures / minor chest wall contusion</span><span class="ais-injury-score" style="background:#22c55e20;color:#22c55e;">AIS 1</span></button>
+        <button class="ais-injury-btn" id="chest-2" onclick="selectAIS('chest',2,'3-5 rib fx / pneumothorax')"><span class="ais-injury-name">3–5 rib fractures / simple pneumothorax / sternal fracture</span><span class="ais-injury-score" style="background:#84cc1620;color:#84cc16;">AIS 2</span></button>
+        <button class="ais-injury-btn" id="chest-3" onclick="selectAIS('chest',3,'6+ rib fx / hemopneumothorax')"><span class="ais-injury-name">6+ rib fractures / hemopneumothorax / pulmonary contusion / diaphragm laceration</span><span class="ais-injury-score" style="background:#eab30820;color:#eab308;">AIS 3</span></button>
+        <button class="ais-injury-btn" id="chest-4" onclick="selectAIS('chest',4,'Flail chest / bilateral hemopneumothorax')"><span class="ais-injury-name">Flail chest / bilateral hemopneumothorax / tension pneumothorax</span><span class="ais-injury-score" style="background:#f9731620;color:#f97316;">AIS 4</span></button>
+        <button class="ais-injury-btn" id="chest-5" onclick="selectAIS('chest',5,'Aortic laceration / bilateral flail')"><span class="ais-injury-name">Aortic laceration / bilateral flail / major tracheobronchial injury</span><span class="ais-injury-score" style="background:#ef444420;color:#ef4444;">AIS 5</span></button>
+      </div>
+    </div>
+
+    <!-- ABDOMEN -->
+    <div class="ais-region">
+      <div class="ais-region-head" onclick="toggleRegion('abdomen')">
+        <div class="ais-region-left">
+          <span style="font-size:16px;">🫀</span>
+          <span class="ais-region-name">Abdomen &amp; Pelvis</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="ais-score-badge" id="badge-abdomen" style="background:#64748b20;color:#64748b;">AIS 0</span>
+          <span style="color:var(--muted);font-size:12px;" id="arrow-abdomen">▼</span>
+        </div>
+      </div>
+      <div class="ais-region-body" id="body-abdomen">
+        <button class="ais-none-btn" onclick="selectAIS('abdomen',0,'None')">✕ None / No significant injury</button>
+        <button class="ais-injury-btn" id="abdomen-1" onclick="selectAIS('abdomen',1,'Abdominal wall contusion')"><span class="ais-injury-name">Abdominal wall contusion / muscle strain</span><span class="ais-injury-score" style="background:#22c55e20;color:#22c55e;">AIS 1</span></button>
+        <button class="ais-injury-btn" id="abdomen-2" onclick="selectAIS('abdomen',2,'Minor splenic/liver lac')"><span class="ais-injury-name">Minor splenic / hepatic laceration (grade I–II) / renal contusion</span><span class="ais-injury-score" style="background:#84cc1620;color:#84cc16;">AIS 2</span></button>
+        <button class="ais-injury-btn" id="abdomen-3" onclick="selectAIS('abdomen',3,'Solid organ lac grade III')"><span class="ais-injury-name">Solid organ laceration grade III / mesenteric injury / bladder rupture</span><span class="ais-injury-score" style="background:#eab30820;color:#eab308;">AIS 3</span></button>
+        <button class="ais-injury-btn" id="abdomen-4" onclick="selectAIS('abdomen',4,'Splenic/liver grade IV / duodenal')"><span class="ais-injury-name">Splenic / hepatic grade IV / duodenal rupture / unstable pelvic fracture</span><span class="ais-injury-score" style="background:#f9731620;color:#f97316;">AIS 4</span></button>
+        <button class="ais-injury-btn" id="abdomen-5" onclick="selectAIS('abdomen',5,'Liver grade V / vascular injury')"><span class="ais-injury-name">Hepatic grade V / major vascular (aorta, IVC, portal vein) / open pelvic fracture</span><span class="ais-injury-score" style="background:#ef444420;color:#ef4444;">AIS 5</span></button>
+      </div>
+    </div>
+
+    <!-- EXTREMITIES -->
+    <div class="ais-region">
+      <div class="ais-region-head" onclick="toggleRegion('extremities')">
+        <div class="ais-region-left">
+          <span style="font-size:16px;">🦴</span>
+          <span class="ais-region-name">Extremities</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="ais-score-badge" id="badge-extremities" style="background:#64748b20;color:#64748b;">AIS 0</span>
+          <span style="color:var(--muted);font-size:12px;" id="arrow-extremities">▼</span>
+        </div>
+      </div>
+      <div class="ais-region-body" id="body-extremities">
+        <button class="ais-none-btn" onclick="selectAIS('extremities',0,'None')">✕ None / No significant injury</button>
+        <button class="ais-injury-btn" id="extremities-1" onclick="selectAIS('extremities',1,'Minor sprain/fracture')"><span class="ais-injury-name">Minor sprain / finger or toe fracture</span><span class="ais-injury-score" style="background:#22c55e20;color:#22c55e;">AIS 1</span></button>
+        <button class="ais-injury-btn" id="extremities-2" onclick="selectAIS('extremities',2,'Simple long bone fx')"><span class="ais-injury-name">Simple long bone fracture (radius, ulna, fibula, clavicle)</span><span class="ais-injury-score" style="background:#84cc1620;color:#84cc16;">AIS 2</span></button>
+        <button class="ais-injury-btn" id="extremities-3" onclick="selectAIS('extremities',3,'Femur / displaced tib-fib')"><span class="ais-injury-name">Femur fracture / displaced tibia-fibula / multiple long bone fractures</span><span class="ais-injury-score" style="background:#eab30820;color:#eab308;">AIS 3</span></button>
+        <button class="ais-injury-btn" id="extremities-4" onclick="selectAIS('extremities',4,'Traumatic amputation / crush')"><span class="ais-injury-name">Traumatic amputation above knee / limb crush injury / bilateral femur</span><span class="ais-injury-score" style="background:#f9731620;color:#f97316;">AIS 4</span></button>
+        <button class="ais-injury-btn" id="extremities-5" onclick="selectAIS('extremities',5,'Multiple amputations / degloving')"><span class="ais-injury-name">Multiple amputations / extensive degloving / vascular compromise multiple limbs</span><span class="ais-injury-score" style="background:#ef444420;color:#ef4444;">AIS 5</span></button>
+      </div>
+    </div>
+
+    <!-- EXTERNAL -->
+    <div class="ais-region">
+      <div class="ais-region-head" onclick="toggleRegion('external')">
+        <div class="ais-region-left">
+          <span style="font-size:16px;">🔥</span>
+          <span class="ais-region-name">External / Burns</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="ais-score-badge" id="badge-external" style="background:#64748b20;color:#64748b;">AIS 0</span>
+          <span style="color:var(--muted);font-size:12px;" id="arrow-external">▼</span>
+        </div>
+      </div>
+      <div class="ais-region-body" id="body-external">
+        <button class="ais-none-btn" onclick="selectAIS('external',0,'None')">✕ None / No significant injury</button>
+        <button class="ais-injury-btn" id="external-1" onclick="selectAIS('external',1,'Abrasion / minor laceration')"><span class="ais-injury-name">Abrasion / minor laceration / superficial burn &lt;10% BSA</span><span class="ais-injury-score" style="background:#22c55e20;color:#22c55e;">AIS 1</span></button>
+        <button class="ais-injury-btn" id="external-2" onclick="selectAIS('external',2,'Partial thickness burn 10-20%')"><span class="ais-injury-name">Partial thickness burn 10–20% BSA / extensive laceration</span><span class="ais-injury-score" style="background:#84cc1620;color:#84cc16;">AIS 2</span></button>
+        <button class="ais-injury-btn" id="external-3" onclick="selectAIS('external',3,'Full thickness burn 10-20%')"><span class="ais-injury-name">Full thickness burn 10–20% BSA / partial thickness &gt;20% BSA</span><span class="ais-injury-score" style="background:#eab30820;color:#eab308;">AIS 3</span></button>
+        <button class="ais-injury-btn" id="external-4" onclick="selectAIS('external',4,'Full thickness burn 20-40%')"><span class="ais-injury-name">Full thickness burn 20–40% BSA</span><span class="ais-injury-score" style="background:#f9731620;color:#f97316;">AIS 4</span></button>
+        <button class="ais-injury-btn" id="external-5" onclick="selectAIS('external',5,'Full thickness burn >40%')"><span class="ais-injury-name">Full thickness burn &gt;40% BSA / inhalation injury</span><span class="ais-injury-score" style="background:#ef444420;color:#ef4444;">AIS 5</span></button>
+      </div>
+    </div>
+
+    <!-- ISS RESULT -->
+    <div class="iss-computed">
+      <div class="iss-computed-main">
+        <span class="iss-computed-num" id="iss-computed-num" style="color:#a78bfa;">0</span>
+        <span class="iss-computed-label">ISS</span>
+      </div>
+      <div class="iss-formula" id="iss-formula">Select injuries above to compute ISS</div>
+      <div>
+        <span class="iss-band" id="iss-band" style="background:#64748b20;color:#64748b;">—</span>
       </div>
     </div>
   </div>
@@ -580,19 +773,79 @@ function toggleChip(key) {
   calc();
 }
 
-// ── ISS DISPLAY ──
-function updateISS() {
-  const v = parseInt(document.getElementById('iss').value);
-  document.getElementById('iss-display').textContent = v;
-  let band, bg, col;
-  if(v<=8)       { band='Minor';    bg='#22c55e20'; col='#22c55e'; }
-  else if(v<=15) { band='Moderate'; bg='#84cc1620'; col='#84cc16'; }
-  else if(v<=24) { band='Serious';  bg='#eab30820'; col='#eab308'; }
-  else if(v<=40) { band='Severe';   bg='#f9731620'; col='#f97316'; }
-  else           { band='Critical'; bg='#ef444420'; col='#ef4444'; }
-  const el = document.getElementById('iss-band');
-  el.textContent = band; el.style.background = bg; el.style.color = col;
+// ── AIS STATE ──
+const aisScores = { head:0, face:0, chest:0, abdomen:0, extremities:0, external:0 };
+const openRegions = {};
+
+function toggleRegion(region) {
+  openRegions[region] = !openRegions[region];
+  document.getElementById('body-'+region).classList.toggle('open', openRegions[region]);
+  document.getElementById('arrow-'+region).textContent = openRegions[region] ? '▲' : '▼';
+}
+
+function selectAIS(region, score, label) {
+  // deselect all buttons in region
+  document.querySelectorAll(`[id^="${region}-"]`).forEach(b => b.classList.remove('selected'));
+  aisScores[region] = score;
+  // highlight selected
+  if(score > 0) {
+    const btn = document.getElementById(`${region}-${score}`);
+    if(btn) btn.classList.add('selected');
+  }
+  // update badge
+  const badge = document.getElementById('badge-'+region);
+  if(score === 0) {
+    badge.textContent = 'AIS 0'; badge.style.background='#64748b20'; badge.style.color='#64748b';
+  } else {
+    const colors = ['','#22c55e','#84cc16','#eab308','#f97316','#ef4444','#dc2626'];
+    badge.textContent = 'AIS '+score;
+    badge.style.background = colors[score]+'20';
+    badge.style.color = colors[score];
+  }
+  computeISS();
+}
+
+function computeISS() {
+  const vals = Object.values(aisScores);
+  // check for AIS 6 (unsurvivable) — auto ISS 75
+  if(vals.includes(6)) {
+    updateISSDisplay(75);
+    document.getElementById('iss-formula').innerHTML = '<span>AIS 6 present → ISS = 75 (maximum)</span>';
+    return;
+  }
+  // sort descending, take top 3
+  const sorted = [...vals].sort((a,b) => b-a).slice(0,3);
+  const iss = sorted.reduce((sum, v) => sum + v*v, 0);
+  updateISSDisplay(iss);
+  // formula display
+  const top3 = sorted.filter(v => v > 0);
+  if(top3.length === 0) {
+    document.getElementById('iss-formula').innerHTML = 'Select injuries above to compute ISS';
+  } else {
+    const parts = sorted.map(v => `<span>${v}²=${v*v}</span>`).join(' + ');
+    document.getElementById('iss-formula').innerHTML = 'Top 3: ' + parts + ` = <span>${iss}</span>`;
+  }
   calc();
+}
+
+function updateISSDisplay(iss) {
+  document.getElementById('iss-computed-num').textContent = iss;
+  let band, bg, col;
+  if(iss<=8)       { band='Minor';    bg='#22c55e20'; col='#22c55e'; }
+  else if(iss<=15) { band='Moderate'; bg='#84cc1620'; col='#84cc16'; }
+  else if(iss<=24) { band='Serious';  bg='#eab30820'; col='#eab308'; }
+  else if(iss<=40) { band='Severe';   bg='#f9731620'; col='#f97316'; }
+  else             { band='Critical'; bg='#ef444420'; col='#ef4444'; }
+  const el = document.getElementById('iss-band');
+  el.textContent=band; el.style.background=bg; el.style.color=col;
+  document.getElementById('iss-computed-num').style.color = col;
+}
+
+function getISS() {
+  const vals = Object.values(aisScores);
+  if(vals.includes(6)) return 75;
+  const sorted = [...vals].sort((a,b) => b-a).slice(0,3);
+  return sorted.reduce((sum,v) => sum+v*v, 0);
 }
 
 // ── VITALS HINTS ──
@@ -636,7 +889,7 @@ function calc() {
   if(chips.contusion) ribScore += 1;
 
   // ISS
-  const iss = parseInt(document.getElementById('iss').value)||1;
+  const iss = getISS();
   if(iss>=41)      issScore=5;
   else if(iss>=25) issScore=4;
   else if(iss>=15) issScore=3;
@@ -801,8 +1054,19 @@ function resetAll() {
   ['age-hint','rib-hint','sbp-hint','rr-hint','gcs-hint','spo2-hint'].forEach(id => {
     const el = document.getElementById(id); if(el) { el.textContent=''; el.className='input-hint'; }
   });
-  document.getElementById('iss').value=1;
-  updateISS();
+  // reset AIS
+  Object.keys(aisScores).forEach(r => {
+    aisScores[r] = 0;
+    const badge = document.getElementById('badge-'+r);
+    if(badge) { badge.textContent='AIS 0'; badge.style.background='#64748b20'; badge.style.color='#64748b'; }
+    document.querySelectorAll(`[id^="${r}-"]`).forEach(b => b.classList.remove('selected'));
+  });
+  document.getElementById('iss-computed-num').textContent='0';
+  document.getElementById('iss-computed-num').style.color='#a78bfa';
+  document.getElementById('iss-band').textContent='—';
+  document.getElementById('iss-band').style.background='#64748b20';
+  document.getElementById('iss-band').style.color='#64748b';
+  document.getElementById('iss-formula').textContent='Select injuries above to compute ISS';
   // reset gauge display
   document.getElementById('gauge-pct').textContent='—';
   document.getElementById('gauge-pct').style.color='#64748b';
@@ -824,7 +1088,7 @@ function resetAll() {
 }
 
 // init
-updateISS();
+computeISS();
 </script>
 </body>
 </html>
